@@ -22,8 +22,12 @@
     border-radius: 0;
 }
 
+#search-for {
+    padding-top: 1rem;
+}
+
 #search-city {
-    width: 80%;
+    width: 100%;
 }
 
 #search-button-icon {
