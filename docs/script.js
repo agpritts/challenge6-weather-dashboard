@@ -49,7 +49,7 @@ var getWeather = (event) => {
         })
         .then((response) => {
             let uvIndex = response.current.uvi;
-            $('#uvIndex').html(`UV Index: <span id="uvVal"> ${uvIndex}</span>`);
+            $('#uvIndex').html(`UV Index: <span id="uvVal">${uvIndex}</span>`);
             if (uvIndex>=0 && uvIndex<3){
                 $('#uvVal').attr("class", "uv-favorable");
             } else if (uvIndex>=3 && uvIndex<8){
