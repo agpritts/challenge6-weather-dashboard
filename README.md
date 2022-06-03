@@ -1,4 +1,4 @@
-# README Generator
+# Weather Dashboard
   ![github license](http://img.shields.io/badge/license-MIT-blue.svg)
 
   ## Link
@@ -44,3 +44,6 @@
   :email: [Email](mailto:agpritts@gmail.com)<br/>
   
   ## Screenshots
+  <img width="1431" alt="Screen Shot 2022-06-02 at 9 26 14 PM" src="https://user-images.githubusercontent.com/96213926/171769223-5d97ee83-f083-4289-8b4e-65385947f100.png">
+
+  
