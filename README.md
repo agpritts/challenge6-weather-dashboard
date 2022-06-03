@@ -1,4 +1,4 @@
-# Weather Dashboard
+# ☀️ Weather Dashboard
   ![github license](http://img.shields.io/badge/license-MIT-blue.svg)
 
   ## Link
