@@ -1,32 +1,26 @@
 var owmAPI = "cdf22472458b933575b8154ed94c685e";
 var currentCity = "";
 var lastCity = "";
+var searchInput = document.querySelector("#search-city");
 
-// var handleErrors = (response) => {
-//     if (!response.ok) {
-//         throw Error(response.statusText);
-//     }
-//     return response;
-// }
-
-var getWeather = (event) => {
+var getWeather = (currentCity) => {
     let city = $('#search-city').val();
     currentCity = $('#search-city').val();
-    let queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial" + "&appid=" + owmAPI;
+    // console.log(currentCity);
+    let queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + currentCity + "&units=imperial" + "&appid=" + owmAPI;
     fetch(queryURL)
     .then((response) => {
         return response.json();
     })
     .then((response) => {
-        saveCity(city);
+        saveToLocal(currentCity);
         $('#search-error').text("");
         let currentWeatherIcon="https://openweathermap.org/img/w/" + response.weather[0].icon + ".png";
         let currentTimeUTC = response.dt;
         let currentTimeZoneOffset = response.timezone;
         let currentTimeZoneOffsetHours = currentTimeZoneOffset / 60 / 60;
         let currentMoment = moment.unix(currentTimeUTC).utc().utcOffset(currentTimeZoneOffsetHours);
-        renderCities();
-        getForecast(event);
+        getForecast(currentCity);
         let currentWeatherHTML = `
             <h2 class="bolded-text">${response.name} ${currentMoment.format("(MM/DD/YY)")}<img src="${currentWeatherIcon}"></h2>
             <ul class="list-unstyled">
@@ -41,8 +35,8 @@ var getWeather = (event) => {
         $('#current-weather').html(currentWeatherHTML);
         let latitude = response.coord.lat;
         let longitude = response.coord.lon;
-        let uvQueryURL = "api.openweathermap.org/data/2.5/onecall?lat=" + latitude + "&lon=" + longitude + "&appid=" + owmAPI;
-        uvQueryURL = "https://cors-anywhere.herokuapp.com/" + uvQueryURL;
+        let uvQueryURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + latitude + "&lon=" + longitude + "&appid=" + owmAPI;
+        // console.log(uvQueryURL);
         fetch(uvQueryURL)
         .then((response) => {
             return response.json();
@@ -57,13 +51,12 @@ var getWeather = (event) => {
             } else if (uvIndex>=8){
                 $('#uvVal').attr("class", "uv-severe");
             }
-        });
+        })
     })
 }
 
-var getForecast = (event) => {
-    let city = $('#search-city').val();
-    let queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + city + "&units=imperial" + "&APPID=" + owmAPI;
+var getForecast = (currentCity) => {
+    let queryURL = "https://api.openweathermap.org/data/2.5/forecast?q=" + currentCity + "&units=imperial" + "&APPID=" + owmAPI;
     fetch(queryURL)
         .then((response) => {
             return response.json();
@@ -99,19 +92,6 @@ var getForecast = (event) => {
     })
 }
 
-var saveCity = (newCity) => {
-    let cityExists = false;
-    for (let i = 0; i < localStorage.length; i++) {
-        if (localStorage["cities" + i] === newCity) {
-            cityExists = true;
-            break;
-        }
-    }
-    if (cityExists === false) {
-        localStorage.setItem('cities' + localStorage.length, newCity);
-    }
-}
-
 var renderCities = () => {
     $('#city-results').empty();
     if (localStorage.length === 0){
@@ -128,7 +108,7 @@ var renderCities = () => {
             let city = localStorage.getItem("cities" + i);
             let cityEl;
             if (currentCity === ""){
-                currentCity=lastCity;
+                currentCity = lastCity;
             }
             if (city === currentCity) {
                 cityEl = `<button type="button" class="list-group-item list-group-item-action active">${city}</button></li>`;
@@ -142,18 +122,55 @@ var renderCities = () => {
 }
 
 $('#search-button').on("click", (event) => {
-event.preventDefault();
-currentCity = $('#search-city').val();
-getWeather(event);
+    event.preventDefault();
+    var currentCity = $('#search-city').val();
+    getWeather(currentCity);
 });
 
 $('#city-results').on("click", (event) => {
     event.preventDefault();
     $('#search-city').val(event.target.textContent);
     currentCity = $('#search-city').val();
-    getWeather(event);
+    getWeather(currentCity);
 });
 
-renderCities();
+var saveToLocal = (currentCity) => {
+    var searchedCities = [];
+    if (localStorage.getItem("city")) {
+        searchedCities = JSON.parse(localStorage.getItem("city"))
+    }
+    if (searchedCities.length < 6) {
+        searchedCities.push(currentCity)
+    } else {
+        searchedCities.splice(0, 1)
+        searchedCities.push(currentCity)
+    }
+    localStorage.setItem("city", JSON.stringify(searchedCities));
+    renderHistory()
+};
 
-getWeather();
+var renderHistory = () => {
+    var historyEl = document.querySelector("#city-results");
+    historyEl.innerHTML = ""
+
+    var history = JSON.parse(localStorage.getItem("city")) || [];
+
+    if (history.length == 0) {
+        var alertMessage = document.createElement("p")
+        alertMessage.setAttribute("class", "h4a");
+        alertMessage.textContent = "No history yet"
+        historyEl.append(alertMessage)
+
+    } else {
+        for (let i = 0; i < history.length; i++) {
+            let cityX = history[i];
+            let cityEl;
+            if (cityX === currentCity) {
+                cityEl = `<button type="button" class="list-group-item list-group-item-action active">${cityX}</button></li>`;
+            } else {
+                cityEl = `<button type="button" class="list-group-item list-group-item-action active">${cityX}</button></li>`;
+            } 
+            $('#city-results').prepend(cityEl);
+        }
+    }
+}
